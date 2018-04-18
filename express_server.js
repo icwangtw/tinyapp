@@ -3,9 +3,11 @@ const app = express();
 const port = process.env.PORT || 8080;
 const bodyParser = require("body-parser");
 const crypto = require("crypto");
+const cookieParser = require("cookie-Parser")
 
 //middleware
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser())
 app.set("view engine", "ejs");
 
 //genearte a random string as id for short URL
@@ -25,7 +27,14 @@ app.get("/", (req, res) => {
 
 //requests page to add new website
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+let templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+  res.render("urls_new", templateVars);
+});
+
+//set login cookie
+app.post("/login", (req, res) => {
+  res.cookie("username", req.body.username);
+  res.redirect(302, "/urls");
 });
 
 //adds a website to the databse while generating new URL
@@ -55,7 +64,13 @@ app.post("/urls/:id/edit", (req, res) => {
     websiteLink = `http://${websiteLink}`
   }
   urlDatabase[req.params.id] = websiteLink;
-  res.redirect(302, "/urls/");
+  res.redirect(302, "/urls");
+});
+
+//logout
+app.post("/logout", (req, res) => {
+  res.clearCookie("username");
+  res.redirect(302, "/urls");
 });
 
 //displays database in json fromat
@@ -65,13 +80,13 @@ app.get("/urls.json", (req, res) => {
 
 //index page showing all URLs and ids
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase };
+  let templateVars = { urls: urlDatabase, username: req.cookies["username"] };
   res.render("urls_index", templateVars);
 });
 
 //page for indiviual shortend URL
 app.get("/urls/:id", (req, res) => {
-  let templateVars = { shortURL: req.params.id, urls: urlDatabase, port:port };
+  let templateVars = { shortURL: req.params.id, urls: urlDatabase, port:port, username: req.cookies["username"] };
   res.render("urls_show", templateVars);
 });
 

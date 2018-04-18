@@ -4,6 +4,17 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 </head> -->
 <body>
-    <p> Your best choice to shorten long URLs! </p>
+    <% if(username!==undefined){ %>
+      <form action="/logout" method="post">
+      <label for="username">Username: <%= username%></label>
+      <button type="submit" value="Submit">Logout</button>
+    </form>
+    <% } else{ %>
+    <form action="/login" method="post">
+      <label for="username">Enter username:</label>
+      <input id="username" type="text" name="username">
+      <button type="submit" value="Submit">Submit</button>
+    </form>
+<% } %>
 </body>
 </html>
