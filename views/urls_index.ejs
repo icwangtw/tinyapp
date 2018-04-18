@@ -7,13 +7,20 @@
     <% include ./partials/_header %>
 </header>
 <body>
-<ul>
-    <% for (const everyLink in urls) { %>
-        <li><%= everyLink + " → " + urls[everyLink] %>
-          <button type="button">DELETE 🗑️</button>
-        </li>
-    <% }; %>
-     </ul>
+  <table>
+  <tr>
+    <th>Unique ID</th>
+    <th>Original Link</th>
+    <th>Delete</th>
+  </tr>
+  <% for (const everyLink in urls) { %>
+  <tr>
+    <td><%= everyLink%></td>
+    <td><%= urls[everyLink]%></td>
+    <td><button onclick="myFunction()">DELETE 🗑️</button></td>
+  </tr>
+  <% }; %>
+  </table>
     <a href="/urls/new">Link Shortener</a>
   </ul>
 </body>
