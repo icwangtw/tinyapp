@@ -26,7 +26,10 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  const newid = generateRandomString();
+  let newid = generateRandomString();
+  while (newid == urlDatabase[newid]) {
+    let newid = generateRandomString();
+  }
   let websiteLink = req.body.longURL
   if (!websiteLink.startsWith("http://") && !websiteLink.startsWith("https://")) {
     websiteLink = `http://${websiteLink}`
@@ -34,6 +37,12 @@ app.post("/urls", (req, res) => {
   urlDatabase[newid] = websiteLink;
   res.redirect(302, `/urls/${newid}`);
 });
+
+app.post("/urls/:id/delete", (req, res) => {
+  delete urlDatabase[req.params.id];
+  res.redirect(302, "/urls")
+});
+
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);

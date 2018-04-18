@@ -16,8 +16,8 @@
   <% for (const everyLink in urls) { %>
   <tr>
     <td><%= everyLink%></td>
-    <td><%= urls[everyLink]%></td>
-    <td><button onclick="myFunction()">DELETE 🗑️</button></td>
+    <td><a href=<%= urls[everyLink]%>><%= urls[everyLink]%></a></td>
+    <td><form action="/urls/<%=everyLink%>/delete" method="post"><button type="submit"s>DELETE 🗑️</button></form></td>
   </tr>
   <% }; %>
   </table>
