@@ -16,10 +16,18 @@ function generateRandomString () {
   return id;
 }
 
-var urlDatabase = {
+const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+
+const usersDatabase = {
+  "hardcodedID": {
+    id: "hardcodedID",
+    email: "user@example.com",
+    password: "user"
+  },
+}
 
 app.get("/", (req, res) => {
   res.end("Hello!");
@@ -73,6 +81,23 @@ app.post("/logout", (req, res) => {
   res.redirect(302, "/urls");
 });
 
+//Registration handler
+app.post("/register", (req, res) => {
+  if (req.body.email === undefined || req.body.password === undefined) {
+    res.status(400).send("Empty emali or password");
+  }
+  else if (req.body.email )
+  let userid = generateRandomString();
+    while (userid == usersDatabase[userid]) {
+    let userid = generateRandomString();
+  }
+  let userinfo = {id: userid, email: req.body.email, password: req.body.password }
+  usersDatabase[userid] = userinfo;
+  res.cookie("id", userid)
+  res.redirect(302, "/urls");
+  console.log(usersDatabase)
+})
+
 //displays database in json fromat
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
@@ -94,6 +119,11 @@ app.get("/urls/:id", (req, res) => {
 app.get("/u/:id", (req, res) => {
   res.redirect(302, urlDatabase[req.params.id]);
 });
+
+//Returns registration page
+app.get("/register", (req, res) => {
+  res.render("registration")
+})
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}!`);
