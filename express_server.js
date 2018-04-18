@@ -43,6 +43,14 @@ app.post("/urls/:id/delete", (req, res) => {
   res.redirect(302, "/urls")
 });
 
+app.post("/urls/:id/edit", (req, res) => {
+  let websiteLink = req.body.longURL
+  if (!websiteLink.startsWith("http://") && !websiteLink.startsWith("https://")) {
+    websiteLink = `http://${websiteLink}`
+  }
+  urlDatabase[req.params.id] = websiteLink;
+  res.redirect(302, `/urls/${req.params.id}`)
+});
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);

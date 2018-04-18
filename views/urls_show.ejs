@@ -7,7 +7,11 @@
     <% include ./partials/_header %>
 </header>
 <body>
-    <p> You wanted <%= shortURL %>, the full website is <%= urls[shortURL] %> </p>
-    <a href="/urls">View all of the shortned links</a>
+    <h2> ShortURL: <%= shortURL %> </h2>
+    <form action="/urls/<%= shortURL %>/edit" method="post">
+      <input id="longURL" type="text" name="longURL" value= <%= urls[shortURL] %>>
+      <button type="submit" value="Submit">Update</button>
+    </form><br>
+    <a href="/urls">View all the shortned links</a>
 </body>
 </html>

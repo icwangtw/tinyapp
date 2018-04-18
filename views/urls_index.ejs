@@ -11,13 +11,14 @@
   <tr>
     <th>Unique ID</th>
     <th>Original Link</th>
-    <th>Delete</th>
+    <th colspan="2">Actions</th>
   </tr>
   <% for (const everyLink in urls) { %>
   <tr>
     <td><%= everyLink%></td>
     <td><a href=<%= urls[everyLink]%>><%= urls[everyLink]%></a></td>
-    <td><form action="/urls/<%=everyLink%>/delete" method="post"><button type="submit"s>DELETE 🗑️</button></form></td>
+    <td><form action="/urls/<%=everyLink%>" method="get"><button type="submit"s>EDIT 🛠</button></form></td>
+    <td><form action="/urls/<%=everyLink%>/delete" method="post"><button type="submit"s>DELETE 🗑</button></form></td>
   </tr>
   <% }; %>
   </table>
