@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>TinyApp</title>
+</head>
+<header>
+    <% include ./partials/_header %>
+</header>
+<body>
+<ul>
+    <% for (const everyLink in urls) { %>
+        <li><%= everyLink + " → " + urls[everyLink] %>
+          <button type="button">DELETE 🗑️</button>
+        </li>
+    <% }; %>
+     </ul>
+    <a href="/urls/new">Link Shortener</a>
+  </ul>
+</body>
+</html>
