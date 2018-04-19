@@ -39,12 +39,6 @@ let templateVars = { urls: urlDatabase, theUser: usersDatabase[req.cookies["id"]
   res.render("urls_new", templateVars);
 });
 
-//set login cookie (OLD)
-// app.post("/login", (req, res) => {
-//   res.cookie("username", req.body.username);
-//   res.redirect(302, "/urls");
-// });
-
 //adds a website to the databse while generating new URL
 app.post("/urls", (req, res) => {
   let newid = generateRandomString();
@@ -85,7 +79,7 @@ app.post("/logout", (req, res) => {
 app.post("/register", (req, res) => {
   if (req.body.email === "" || req.body.password === "") {
     res.status(400).send("Empty email or password");
-  }
+  };
   for (user in usersDatabase) {
     if (usersDatabase[user].email == req.body.email) {
     res.status(400).send("Email already registered");
@@ -99,7 +93,6 @@ app.post("/register", (req, res) => {
   usersDatabase[userid] = userinfo;
   res.cookie("id", userinfo.id)
   res.redirect(302, "/urls");
-  console.log(usersDatabase)
 });
 
 //login handler
@@ -107,7 +100,7 @@ app.post("/login", (req, res) => {
   if (req.body.email === "" || req.body.password === "") {
     res.status(400).send("Empty email or password");
   }
-  const emailcheck = function () {
+  const emailcheck = () => {
     for (user in usersDatabase) {
       if (usersDatabase[user].email === req.body.email) {
         let loginid = usersDatabase[user].id;
@@ -119,10 +112,8 @@ app.post("/login", (req, res) => {
     if (usersDatabase[user].password === req.body.password) {
         res.cookie("id", usersDatabase[user].id);
         res.redirect(302, "/");
-        return;
       } else {
         res.status(403).send("Invalid password");
-        return;
       };
     } else {
       res.status(403).send("Email not found");
