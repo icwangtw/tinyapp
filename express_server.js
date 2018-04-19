@@ -4,6 +4,7 @@ const port = process.env.PORT || 8080;
 const bodyParser = require("body-parser");
 const crypto = require("crypto");
 const cookieParser = require("cookie-Parser")
+const bcrypt = require('bcrypt');
 
 //middleware
 app.use(bodyParser.urlencoded({extended: true}));
@@ -102,10 +103,11 @@ app.post("/register", (req, res) => {
   while (userid == usersDatabase[userid]) {
     let userid = generateRandomString();
   }
-  let userinfo = {id: userid, email: req.body.email, password: req.body.password}
-  usersDatabase[userid] = userinfo;
-  res.cookie("id", userinfo.id)
+  let userPassword = bcrypt.hashSync(req.body.password, 10);
+  usersDatabase[userid] = {id: userid, email: req.body.email, password: userPassword};
+  res.cookie("id", usersDatabase[userid].id)
   res.redirect(302, "/urls");
+  console.log(usersDatabase);
 });
 
 //login handler
@@ -116,15 +118,15 @@ app.post("/login", (req, res) => {
   const emailcheck = () => {
     for (user in usersDatabase) {
       if (usersDatabase[user].email === req.body.email) {
-        let loginid = usersDatabase[user].id;
-        return loginid;
+        return true;
       }
     };
   }
   if (emailcheck()) {
-    if (usersDatabase[user].password === req.body.password) {
+    if (bcrypt.compareSync(req.body.password, usersDatabase[user].password)) {
         res.cookie("id", usersDatabase[user].id);
         res.redirect(302, "/");
+        console.log(usersDatabase);
       } else {
         res.status(403).send("Invalid password");
       };
