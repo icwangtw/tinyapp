@@ -16,8 +16,11 @@ function generateRandomString () {
   return id;
 }
 
+//checks if logged in
+
+
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
+  "b2xVn2": "http://www.lighthouselabs.ca"
   "9sm5xK": "http://www.google.com"
 };
 
@@ -35,8 +38,19 @@ app.get("/", (req, res) => {
 
 //requests page to add new website
 app.get("/urls/new", (req, res) => {
-let templateVars = { urls: urlDatabase, theUser: usersDatabase[req.cookies["id"]] };
-  res.render("urls_new", templateVars);
+  function logincheck () {
+    for (user in usersDatabase) {
+      if (usersDatabase[user].id === req.cookies["id"]) {
+        return true;
+      }
+    }
+  }
+  if (logincheck()) {
+    let templateVars = { urls: urlDatabase, theUser: usersDatabase[req.cookies["id"]] };
+    res.render("urls_new", templateVars);
+  } else {
+    res.redirect(302, "/login")
+  }
 });
 
 //adds a website to the databse while generating new URL
