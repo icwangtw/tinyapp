@@ -35,15 +35,15 @@ app.get("/", (req, res) => {
 
 //requests page to add new website
 app.get("/urls/new", (req, res) => {
-let templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+let templateVars = { urls: urlDatabase, theUser: usersDatabase[req.cookies["id"]] };
   res.render("urls_new", templateVars);
 });
 
-//set login cookie
-app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username);
-  res.redirect(302, "/urls");
-});
+//set login cookie (OLD)
+// app.post("/login", (req, res) => {
+//   res.cookie("username", req.body.username);
+//   res.redirect(302, "/urls");
+// });
 
 //adds a website to the databse while generating new URL
 app.post("/urls", (req, res) => {
@@ -77,7 +77,7 @@ app.post("/urls/:id/edit", (req, res) => {
 
 //logout
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("id");
   res.redirect(302, "/urls");
 });
 
@@ -89,7 +89,6 @@ app.post("/register", (req, res) => {
   for (user in usersDatabase) {
     if (usersDatabase[user].email == req.body.email) {
     res.status(400).send("Email already registered");
-    return;
     }
   }
   let userid = generateRandomString();
@@ -98,9 +97,43 @@ app.post("/register", (req, res) => {
   }
   let userinfo = {id: userid, email: req.body.email, password: req.body.password}
   usersDatabase[userid] = userinfo;
-  res.cookie("id", userid)
+  res.cookie("id", userinfo.id)
   res.redirect(302, "/urls");
-})
+  console.log(usersDatabase)
+});
+
+//login handler
+app.post("/login", (req, res) => {
+  if (req.body.email === "" || req.body.password === "") {
+    res.status(400).send("Empty email or password");
+  }
+  const emailcheck = function () {
+    for (user in usersDatabase) {
+      if (usersDatabase[user].email === req.body.email) {
+        let loginid = usersDatabase[user].id;
+        return loginid;
+      }
+    };
+  }
+  if (emailcheck()) {
+    if (usersDatabase[user].password === req.body.password) {
+        res.cookie("id", usersDatabase[user].id);
+        res.redirect(302, "/");
+        return;
+      } else {
+        res.status(403).send("Invalid password");
+        return;
+      };
+    } else {
+      res.status(403).send("Email not found");
+    };
+});
+
+//login page
+app.get("/login", (req, res) => {
+  res.render("login")
+});
+
 //displays database in json fromat
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
@@ -108,13 +141,13 @@ app.get("/urls.json", (req, res) => {
 
 //index page showing all URLs and ids
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+  let templateVars = { urls: urlDatabase, theUser: usersDatabase[req.cookies["id"]] };
   res.render("urls_index", templateVars);
 });
 
 //page for indiviual shortend URL
 app.get("/urls/:id", (req, res) => {
-  let templateVars = { shortURL: req.params.id, urls: urlDatabase, port:port, username: req.cookies["username"] };
+  let templateVars = { shortURL: req.params.id, urls: urlDatabase, port:port, theUser: usersDatabase[req.cookies["id"]] };
   res.render("urls_show", templateVars);
 });
 
