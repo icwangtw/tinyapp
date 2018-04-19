@@ -4,16 +4,17 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 </head> -->
 <body>
-    <% if(username!==undefined){ %>
-      <form action="/logout" method="post">
-      <label for="username">Username: <%= username%></label>
-      <button type="submit" value="Submit">Logout</button>
-    </form>
+    <% if( theUser === undefined){ %>
+      <form action="/register" method="get">
+        <button type="submit" value="Submit">Register</button>
+      </form>
+      <form action="/login" method="get">
+        <button type="submit" value="Submit">Login</button>
+      </form>
     <% } else{ %>
-    <form action="/login" method="post">
-      <label for="username">Enter username:</label>
-      <input id="username" type="text" name="username">
-      <button type="submit" value="Submit">Submit</button>
+      <form action="/logout" method="post">
+        <label for="username">Username: <%= theUser.email %></label>
+      <button type="submit" value="Submit">Logout</button>
     </form>
 <% } %>
 </body>
