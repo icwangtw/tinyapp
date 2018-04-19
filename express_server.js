@@ -16,12 +16,9 @@ function generateRandomString () {
   return id;
 }
 
-//checks if logged in
-
-
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca"
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {link: "http://www.lighthouselabs.ca", creatorid: "hardcodedID"},
+  "9sm5xK": {link: "http://www.google.com", creatorid: "hardcodedID"}
 };
 
 const usersDatabase = {
@@ -63,7 +60,7 @@ app.post("/urls", (req, res) => {
   if (!websiteLink.startsWith("http://") && !websiteLink.startsWith("https://")) {
     websiteLink = `http://${websiteLink}`
   }
-  urlDatabase[newid] = websiteLink;
+  urlDatabase[newid] = { link: websiteLink, creatorid: req.cookies["id"] }
   res.redirect(302, `/urls/${newid}`);
 });
 
