@@ -83,21 +83,24 @@ app.post("/logout", (req, res) => {
 
 //Registration handler
 app.post("/register", (req, res) => {
-  if (req.body.email === undefined || req.body.password === undefined) {
-    res.status(400).send("Empty emali or password");
+  if (req.body.email === "" || req.body.password === "") {
+    res.status(400).send("Empty email or password");
   }
-  else if (req.body.email )
+  for (user in usersDatabase) {
+    if (usersDatabase[user].email == req.body.email) {
+    res.status(400).send("Email already registered");
+    return;
+    }
+  }
   let userid = generateRandomString();
-    while (userid == usersDatabase[userid]) {
+  while (userid == usersDatabase[userid]) {
     let userid = generateRandomString();
   }
-  let userinfo = {id: userid, email: req.body.email, password: req.body.password }
+  let userinfo = {id: userid, email: req.body.email, password: req.body.password}
   usersDatabase[userid] = userinfo;
   res.cookie("id", userid)
   res.redirect(302, "/urls");
-  console.log(usersDatabase)
 })
-
 //displays database in json fromat
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
