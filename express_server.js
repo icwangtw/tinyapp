@@ -16,9 +16,18 @@ function generateRandomString () {
   return id;
 }
 
+//function to check if user is logged in
+function logincheck(cookie) {
+  for (user in usersDatabase) {
+    if (usersDatabase[user].id === cookie) {
+      return true;
+    }
+  }
+}
+
 const urlDatabase = {
-  "b2xVn2": {link: "http://www.lighthouselabs.ca", creatorid: "hardcodedID"},
-  "9sm5xK": {link: "http://www.google.com", creatorid: "hardcodedID"}
+  "b2xVn2": {id: "b2xVn2", link: "http://www.lighthouselabs.ca", creatorid: "hardcodedID"},
+  "9sm5xK": {id: "9sm5xK", link: "http://www.google.com", creatorid: "hardcodedID"}
 };
 
 const usersDatabase = {
@@ -35,14 +44,7 @@ app.get("/", (req, res) => {
 
 //requests page to add new website
 app.get("/urls/new", (req, res) => {
-  function logincheck () {
-    for (user in usersDatabase) {
-      if (usersDatabase[user].id === req.cookies["id"]) {
-        return true;
-      }
-    }
-  }
-  if (logincheck()) {
+  if (logincheck(req.cookies["id"])) {
     let templateVars = { urls: urlDatabase, theUser: usersDatabase[req.cookies["id"]] };
     res.render("urls_new", templateVars);
   } else {
@@ -60,7 +62,7 @@ app.post("/urls", (req, res) => {
   if (!websiteLink.startsWith("http://") && !websiteLink.startsWith("https://")) {
     websiteLink = `http://${websiteLink}`
   }
-  urlDatabase[newid] = { link: websiteLink, creatorid: req.cookies["id"] }
+  urlDatabase[newid] = {id: newid, link: websiteLink, creatorid: req.cookies["id"] }
   res.redirect(302, `/urls/${newid}`);
 });
 
@@ -76,7 +78,7 @@ app.post("/urls/:id/edit", (req, res) => {
   if (!websiteLink.startsWith("http://") && !websiteLink.startsWith("https://")) {
     websiteLink = `http://${websiteLink}`
   }
-  urlDatabase[req.params.id] = websiteLink;
+  urlDatabase[req.params.id].link = websiteLink;
   res.redirect(302, "/urls");
 });
 
@@ -141,21 +143,42 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-//index page showing all URLs and ids
+//index page showing URLs for each individual user
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase, theUser: usersDatabase[req.cookies["id"]] };
-  res.render("urls_index", templateVars);
+  if (logincheck(req.cookies["id"])) {
+    let filteredDatabase = [];
+    for (createdLink in urlDatabase) {
+      if (urlDatabase[createdLink].creatorid === req.cookies["id"]) {
+        filteredDatabase.push(urlDatabase[createdLink]);
+      }
+    }
+    let templateVars = { urls: filteredDatabase, theUser: usersDatabase[req.cookies["id"]] };
+    res.render("urls_index", templateVars);
+  } else {
+    res.status(400).send("Not logged in");
+  }
 });
 
 //page for indiviual shortend URL
 app.get("/urls/:id", (req, res) => {
-  let templateVars = { shortURL: req.params.id, urls: urlDatabase, port:port, theUser: usersDatabase[req.cookies["id"]] };
-  res.render("urls_show", templateVars);
+  function usercheck () {
+    if (req.cookies["id"] === urlDatabase[req.params.id].creatorid ) {
+        let templateVars = { shortURL: req.params.id, urls: urlDatabase, port:port, theUser: usersDatabase[req.cookies["id"]] };
+        res.render("urls_show", templateVars);
+    } else {
+      res.status(400).send("Access Denied");
+    }
+  }
+  if (logincheck(req.cookies["id"])) {
+      usercheck();
+  } else {
+    res.status(400).send("Not logged in");
+  }
 });
 
 //redirect link for URLs in database
 app.get("/u/:id", (req, res) => {
-  res.redirect(302, urlDatabase[req.params.id]);
+  res.redirect(302, urlDatabase[req.params.id].link);
 });
 
 //Returns registration page

@@ -8,19 +8,20 @@
 </header>
 <body>
   <table>
+  <% if (urls.length !== 0) { %>
   <tr>
     <th>Unique ID</th>
     <th>Original Link</th>
     <th colspan="2">Actions</th>
   </tr>
-  <% for (const everyLink in urls) { %>
+  <% urls.forEach(function(everylink){ %>
   <tr>
-    <td><%= everyLink%></td>
-    <td><a href=<%= urls[everyLink].link%>><%= urls[everyLink].link%></a></td>
-    <td><form action="/urls/<%=everyLink%>" method="get"><button type="submit"s>EDIT 🛠</button></form></td>
-    <td><form action="/urls/<%=everyLink%>/delete" method="post"><button type="submit"s>DELETE 🗑</button></form></td>
+    <td><%= everylink.id %></td>
+    <td><a href=<%= everylink.link%>><%= everylink.link%></a></td>
+    <td><form action="/urls/<%=everylink.id%>" method="get"><button type="submit"s>EDIT 🛠</button></form></td>
+    <td><form action="/urls/<%=everylink.id%>/delete" method="post"><button type="submit"s>DELETE 🗑</button></form></td>
   </tr>
-  <% }; %>
+  <% })}; %>
   </table><br>
     <a href="/urls/new">Shorten another link</a>
   </ul>
