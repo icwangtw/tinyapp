@@ -50,6 +50,22 @@ app.get("/", (req, res) => {
   }
 });
 
+// index page showing URLs for each individual user
+app.get("/urls", (req, res) => {
+  if (logincheck(req.session.id)) {
+    let filteredDatabase = [];
+    for (let createdLink in urlDatabase) {
+      if (urlDatabase[createdLink].creatorid === req.session.id) {
+        filteredDatabase.push(urlDatabase[createdLink]);
+      }
+    }
+    let templateVars = {urls: filteredDatabase, theUser: usersDatabase[req.session.id]};
+    res.render("urls_index", templateVars);
+  } else {
+    res.status(403).send("Not Logged In");
+  }
+});
+
 // requests page to add new website
 app.get("/urls/new", (req, res) => {
   if (logincheck(req.session.id)) {
@@ -58,6 +74,28 @@ app.get("/urls/new", (req, res) => {
   } else {
     res.redirect(302, "/login");
   }
+});
+
+// page for indiviual shortend URL
+app.get("/urls/:id", (req, res) => {
+  const usercheck = () => {
+    if (req.session.id === urlDatabase[req.params.id].creatorid) {
+      let templateVars = {shortURL: req.params.id, urls: urlDatabase, port: port, theUser: usersDatabase[req.session.id]};
+      res.render("urls_show", templateVars);
+    } else {
+      res.status(403).send("Access Denied");
+    }
+  };
+  if (logincheck(req.session.id)) {
+    usercheck();
+  } else {
+    res.status(403).send("Not Logged In");
+  }
+});
+
+// redirect link for URLs in database
+app.get("/u/:id", (req, res) => {
+  res.redirect(302, urlDatabase[req.params.id].link);
 });
 
 // adds a website to the database while generating new URL
@@ -74,6 +112,16 @@ app.post("/urls", (req, res) => {
   res.redirect(302, `/urls/${newid}`);
 });
 
+// edits corresponding URL of id
+app.post("/urls/:id", (req, res) => {
+  let websiteLink = req.body.longURL;
+  if (!websiteLink.startsWith("http://") && !websiteLink.startsWith("https://")) {
+    websiteLink = `http://${websiteLink}`;
+  }
+  urlDatabase[req.params.id].link = websiteLink;
+  res.redirect(302, "/urls");
+});
+
 // deletes URL from database
 app.post("/urls/:id/delete", (req, res) => {
   if (req.session.id === urlDatabase[req.params.id].creatorid) {
@@ -84,42 +132,22 @@ app.post("/urls/:id/delete", (req, res) => {
   }
 });
 
-// edits corresponding URL of id
-app.post("/urls/:id/edit", (req, res) => {
-  let websiteLink = req.body.longURL;
-  if (!websiteLink.startsWith("http://") && !websiteLink.startsWith("https://")) {
-    websiteLink = `http://${websiteLink}`;
+// login page
+app.get("/login", (req, res) => {
+  if (!logincheck(req.session.id)) {
+    res.render("login");
+  } else {
+    res.redirect(302, "urls");
   }
-  urlDatabase[req.params.id].link = websiteLink;
-  res.redirect(302, "/urls");
 });
 
-// logout handler
-app.post("/logout", (req, res) => {
-  req.session = null;
-  res.redirect(302, "/");
-});
-
-// Registration handler
-app.post("/register", (req, res) => {
-  if (req.body.email === "" || req.body.password === "") {
-    res.status(400).send("Empty email or password");
-    return;
+// returns registration page
+app.get("/register", (req, res) => {
+  if (logincheck()) {
+    res.redirect(302, "urls");
+  } else {
+    res.render("registration");
   }
-  for (let user in usersDatabase) {
-    if (usersDatabase[user].email === req.body.email) {
-      res.status(400).send("Email already registered");
-      return;
-    }
-  }
-  let userid = generateRandomString();
-  while (userid === usersDatabase[userid].id) {
-    let userid = generateRandomString();
-  }
-  let userPassword = bcrypt.hashSync(req.body.password, 10);
-  usersDatabase[userid] = {id: userid, email: req.body.email, password: userPassword};
-  req.session.id = userid;
-  res.redirect(302, "/urls");
 });
 
 // login handler
@@ -148,66 +176,32 @@ app.post("/login", (req, res) => {
   }
 });
 
-// login page
-app.get("/login", (req, res) => {
-  if (!logincheck(req.session.id)) {
-    res.render("login");
-  } else {
-    res.redirect(302, "urls");
+// Registration handler
+app.post("/register", (req, res) => {
+  if (req.body.email === "" || req.body.password === "") {
+    res.status(400).send("Empty email or password");
+    return;
   }
-});
-
-// displays URL database in json format
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-// displays user database in json format
-app.get("/users.json", (req, res) => {
-  res.json(usersDatabase);
-});
-
-// index page showing URLs for each individual user
-app.get("/urls", (req, res) => {
-  if (logincheck(req.session.id)) {
-    let filteredDatabase = [];
-    for (let createdLink in urlDatabase) {
-      if (urlDatabase[createdLink].creatorid === req.session.id) {
-        filteredDatabase.push(urlDatabase[createdLink]);
-      }
+  for (let user in usersDatabase) {
+    if (usersDatabase[user].email === req.body.email) {
+      res.status(400).send("Email already registered");
+      return;
     }
-    let templateVars = {urls: filteredDatabase, theUser: usersDatabase[req.session.id]};
-    res.render("urls_index", templateVars);
-  } else {
-    res.status(403).send("Not Logged In");
   }
-});
-
-// page for indiviual shortend URL
-app.get("/urls/:id", (req, res) => {
-  const usercheck = () => {
-    if (req.session.id === urlDatabase[req.params.id].creatorid) {
-      let templateVars = {shortURL: req.params.id, urls: urlDatabase, port: port, theUser: usersDatabase[req.session.id]};
-      res.render("urls_show", templateVars);
-    } else {
-      res.status(403).send("Access Denied");
-    }
-  };
-  if (logincheck(req.session.id)) {
-    usercheck();
-  } else {
-    res.status(403).send("Not Logged In");
+  let userid = generateRandomString();
+  while (usersDatabase[userid]) {
+    let userid = generateRandomString();
   }
+  let userPassword = bcrypt.hashSync(req.body.password, 10);
+  usersDatabase[userid] = {id: userid, email: req.body.email, password: userPassword};
+  req.session.id = userid;
+  res.redirect(302, "/urls");
 });
 
-// redirect link for URLs in database
-app.get("/u/:id", (req, res) => {
-  res.redirect(302, urlDatabase[req.params.id].link);
-});
-
-// returns registration page
-app.get("/register", (req, res) => {
-  res.render("registration");
+// logout handler
+app.post("/logout", (req, res) => {
+  req.session = null;
+  res.redirect(302, "/");
 });
 
 app.listen(port, () => {

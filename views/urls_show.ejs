@@ -8,7 +8,7 @@
 </header>
 <body>
   <h3> ShortURL: <%= shortURL %> </h3>
-  <form action="/urls/<%= shortURL %>/edit" method="post">
+  <form action="/urls/<%= shortURL %>" method="post">
     <input id="longURL" type="text" name="longURL" value= <%= urls[shortURL].link %>>
     <button type="submit" value="Submit">Update</button>
   </form><br>
