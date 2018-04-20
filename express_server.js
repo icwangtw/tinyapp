@@ -59,7 +59,7 @@ app.get("/urls", (req, res) => {
         filteredDatabase.push(urlDatabase[createdLink]);
       }
     }
-    let templateVars = {urls: filteredDatabase, port: port, theUser: usersDatabase[req.session.id]};
+    let templateVars = {urls: filteredDatabase, theUser: usersDatabase[req.session.id]};
     res.render("urls_index", templateVars);
   } else {
     res.status(403).send("Not Logged In");
@@ -147,7 +147,7 @@ app.get("/login", (req, res) => {
 
 // returns registration page
 app.get("/register", (req, res) => {
-  if (logincheck()) {
+  if (logincheck(req.session.id)) {
     res.redirect(302, "urls");
   } else {
     res.render("registration");
