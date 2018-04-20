@@ -95,7 +95,11 @@ app.get("/urls/:id", (req, res) => {
 
 // redirect link for URLs in database
 app.get("/u/:id", (req, res) => {
-  res.redirect(302, urlDatabase[req.params.id].link);
+  if (!urlDatabase[req.params.id]) {
+    res.status(404).send("Link not found");
+  } else {
+    res.redirect(302, urlDatabase[req.params.id].link);
+  }
 });
 
 // adds a website to the database while generating new URL
