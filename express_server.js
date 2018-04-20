@@ -59,7 +59,7 @@ app.get("/urls", (req, res) => {
         filteredDatabase.push(urlDatabase[createdLink]);
       }
     }
-    let templateVars = {urls: filteredDatabase, theUser: usersDatabase[req.session.id]};
+    let templateVars = {urls: filteredDatabase, port: port, theUser: usersDatabase[req.session.id]};
     res.render("urls_index", templateVars);
   } else {
     res.status(403).send("Not Logged In");
@@ -105,7 +105,7 @@ app.get("/u/:id", (req, res) => {
 // adds a website to the database while generating new URL
 app.post("/urls", (req, res) => {
   let newid = generateRandomString();
-  while (newid === urlDatabase[newid]) {
+  while (urlDatabase[newid] !== undefined) {
     let newid = generateRandomString();
   }
   let websiteLink = req.body.longURL;
@@ -180,7 +180,7 @@ app.post("/login", (req, res) => {
   }
 });
 
-// Registration handler
+// registration handler
 app.post("/register", (req, res) => {
   if (req.body.email === "" || req.body.password === "") {
     res.status(400).send("Empty email or password");
