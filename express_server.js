@@ -3,31 +3,31 @@ const app = express();
 const port = process.env.PORT || 8080;
 const bodyParser = require("body-parser");
 const crypto = require("crypto"); //to generate random string
-const cookieSession = require("cookie-session")
+const cookieSession = require("cookie-session");
 const bcrypt = require('bcrypt');
 
 //middleware
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieSession({
-  name: 'session',
-  keys: ['2o9UjHxdpd7PKrPFj0B1', 'y28EbKtnaSaYpDGdTsth', '7igwx7myeIB9vbYncwJo'],
+  name: "session",
+  keys: ["2o9UjHxdpd7PKrPFj0B1", "y28EbKtnaSaYpDGdTsth", "7igwx7myeIB9vbYncwJo"],
 }));
 app.set("view engine", "ejs");
 
-//genearte a random string as id for short URL
-function generateRandomString () {
+//FUNCTION to genearte a random string
+const generateRandomString = () => {
   const id = crypto.randomBytes(3).toString("hex");
   return id;
-}
+};
 
-//function to check if user is logged in
-function logincheck(cookie) {
+//FUNCTION to check if user is logged in
+const logincheck = (cookie) => {
   for (let user in usersDatabase) {
     if (usersDatabase[user].id === cookie) {
       return true;
     }
   }
-}
+};
 
 const urlDatabase = {
   "b2xVn2": {id: "b2xVn2", link: "http://www.lighthouselabs.ca", creatorid: "hardcodedID"},
@@ -35,25 +35,26 @@ const urlDatabase = {
 };
 
 const usersDatabase = {
-  "hardcodedID": {id: "hardcodedID", email: "user@example.com", password: '$2b$10$eUNFBu56gWxr8Xd9A5/NJuZYfIZygz1vaZtvBmO0h1tnfNXF4LK5q'},
+  "hardcodedID": {id: "hardcodedID", email: "user@example.com", password: bcrypt.hashSync("user", 10)},
+  "hardcodedID2": {id: "hardcodedID2", email: "user2@example.com", password: bcrypt.hashSync("user2", 10)},
 };
 
 //homepage
 app.get("/", (req, res) => {
   if (logincheck(req.session.id)) {
-    res.redirect(302, "/urls")
+    res.redirect(302, "/urls");
   } else {
-    res.redirect(302, "/login")
+    res.redirect(302, "/login");
   }
 });
 
 //requests page to add new website
 app.get("/urls/new", (req, res) => {
   if (logincheck(req.session.id)) {
-    let templateVars = { urls: urlDatabase, theUser: usersDatabase[req.session.id] };
+    let templateVars = {urls: urlDatabase, theUser: usersDatabase[req.session.id]};
     res.render("urls_new", templateVars);
   } else {
-    res.redirect(302, "/login")
+    res.redirect(302, "/login");
   }
 });
 
@@ -63,31 +64,35 @@ app.post("/urls", (req, res) => {
   while (newid == urlDatabase[newid]) {
     let newid = generateRandomString();
   }
-  let websiteLink = req.body.longURL
+  let websiteLink = req.body.longURL;
   if (!websiteLink.startsWith("http://") && !websiteLink.startsWith("https://")) {
-    websiteLink = `http://${websiteLink}`
+    websiteLink = `http://${websiteLink}`;
   }
-  urlDatabase[newid] = {id: newid, link: websiteLink, creatorid: req.session.id}
+  urlDatabase[newid] = {id: newid, link: websiteLink, creatorid: req.session.id};
   res.redirect(302, `/urls/${newid}`);
 });
 
 //deletes URL from database
 app.post("/urls/:id/delete", (req, res) => {
-  delete urlDatabase[req.params.id];
-  res.redirect(302, "/urls");
+  if (req.session.id === urlDatabase[req.params.id].creatorid) {
+    delete urlDatabase[req.params.id];
+    res.redirect(302, "/urls");
+  } else {
+    res.status(403).send("Access Denied");
+  }
 });
 
 //edits corresponding URL of id
 app.post("/urls/:id/edit", (req, res) => {
-  let websiteLink = req.body.longURL
+  let websiteLink = req.body.longURL;
   if (!websiteLink.startsWith("http://") && !websiteLink.startsWith("https://")) {
-    websiteLink = `http://${websiteLink}`
+    websiteLink = `http://${websiteLink}`;
   }
   urlDatabase[req.params.id].link = websiteLink;
   res.redirect(302, "/urls");
 });
 
-//logout
+//logout handler
 app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect(302, "/");
@@ -97,14 +102,16 @@ app.post("/logout", (req, res) => {
 app.post("/register", (req, res) => {
   if (req.body.email === "" || req.body.password === "") {
     res.status(400).send("Empty email or password");
+    return;
   };
   for (user in usersDatabase) {
-    if (usersDatabase[user].email == req.body.email) {
+    if (usersDatabase[user].email === req.body.email) {
     res.status(400).send("Email already registered");
+    return;
     }
   }
   let userid = generateRandomString();
-  while (userid == usersDatabase[userid]) {
+  while (userid === usersDatabase[userid]) {
     let userid = generateRandomString();
   }
   let userPassword = bcrypt.hashSync(req.body.password, 10);
@@ -141,9 +148,9 @@ app.post("/login", (req, res) => {
 //login page
 app.get("/login", (req, res) => {
   if (!logincheck(req.session.id)) {
-    res.render("login")
+    res.render("login");
   } else {
-    res.redirect(302, "urls")
+    res.redirect(302, "urls");
   }
 });
 
@@ -169,24 +176,24 @@ app.get("/urls", (req, res) => {
     let templateVars = { urls: filteredDatabase, theUser: usersDatabase[req.session.id] };
     res.render("urls_index", templateVars);
   } else {
-    res.status(400).send("Not logged in");
+    res.status(403).send("Not Logged In";
   }
 });
 
 //page for indiviual shortend URL
 app.get("/urls/:id", (req, res) => {
-  function usercheck () {
+  const usercheck = () => {
     if (req.session.id === urlDatabase[req.params.id].creatorid ) {
         let templateVars = { shortURL: req.params.id, urls: urlDatabase, port:port, theUser: usersDatabase[req.session.id] };
         res.render("urls_show", templateVars);
     } else {
-      res.status(400).send("Access Denied");
+      res.status(403).send("Access Denied");
     }
   }
   if (logincheck(req.session.id)) {
       usercheck();
   } else {
-    res.status(400).send("Not logged in");
+    res.status(403).send("Not Logged In");
   }
 });
 
@@ -195,10 +202,10 @@ app.get("/u/:id", (req, res) => {
   res.redirect(302, urlDatabase[req.params.id].link);
 });
 
-//Returns registration page
+//returns registration page
 app.get("/register", (req, res) => {
-  res.render("registration")
-})
+  res.render("registration");
+});
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}!`);
