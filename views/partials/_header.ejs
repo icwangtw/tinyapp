@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <body>
-    <% if( theUser === undefined){ %>
-      <form action="/register" method="get">
-        <button type="submit" value="Submit">Register</button>
-      </form>
+  <% if( theUser === undefined){ %>
+    <form action="/register" method="get">
+      <button type="submit" value="Submit">Register</button>
+    </form>
       <form action="/login" method="get">
-        <button type="submit" value="Submit">Login</button>
-      </form>
-    <% } else{ %>
-      <form action="/logout" method="post">
-        <label for="username">User: <%= theUser.email %></label>
+      <button type="submit" value="Submit">Login</button>
+    </form>
+  <% } else{ %>
+    <form action="/logout" method="post">
+      <label for="username">User: <%= theUser.email %></label>
       <button type="submit" value="Submit">Logout</button>
     </form>
-<% } %>
+  <% } %>
 </body>
 </html>
